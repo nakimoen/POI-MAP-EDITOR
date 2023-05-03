@@ -22,17 +22,20 @@
     <main>
       <h1>POI MAP EDITOR</h1>
       <span style="color: red"
-        >現在検証が不十分な状態です。何卒ご了承ください。</span
+        >現在試験的運用中のため検証が不十分な状態です。何卒ご理解ください。</span
       >
-      <section></section>
-
-      <section>
+      <div>
+        <div id="wrapper-file">
+          <label for="gpx-file">GPXファイルの読み込み</label>
+          <br />
+          <input type="file" name="gpx-file" id="gpx-file" accept=".gpx" />
+          <br />
+          <button type="button" class="button-excute" id="load-gpx-button">
+            読み込む
+          </button>
+        </div>
         <div id="wrapper-editor">
           <div id="wrapper-map" class="container-box">
-            <div>
-              <input type="file" name="" id="gpx-file" accept=".gpx" />
-              <button type="button" id="load-gpx-button">読み込む</button>
-            </div>
             <div id="map"></div>
           </div>
 
@@ -59,6 +62,7 @@
                 <input
                   type="submit"
                   id="export-button"
+                  class="button-excute"
                   value="出力（ダウンロード）"
                   onclick="onExport('gpx');"
                 />
@@ -73,7 +77,7 @@
                   <thead>
                     <tr>
                       <th>POI名</th>
-                      <th>緯度・経度</th>
+                      <th>経緯度</th>
                       <th></th>
                     </tr>
                   </thead>
@@ -93,12 +97,6 @@
                       />
                     </td>
                     <td>
-                      <!-- <input
-                        type="string"
-                        name="latlng"
-                        class="latlng"
-                        onchange="onLatLngEdited(this)"
-                      /> -->
                       <div>
                         <label for="lat">緯度</label>
                         <input
@@ -136,74 +134,94 @@
             </form>
           </div>
         </div>
-      </section>
+      </div>
 
-      <section>
-        <h2>WHAT IS THIS</h2>
-        <p>
-          <strong>GPX ファイル</strong>
-          （ルート・トラックファイル）を読み込み、<strong
-            >Open Street Map</strong
-          >上で、<strong>ウェイポイント</strong>(POI)を設定するWEBアプリです。<br />
-          <strong>Ride With GPS</strong
-          >等のルートファイルを元に使用することを想定しています。
-        </p>
-        <p>スマホ向けデザインの適応はしていません。ご了承ください。</p>
-
-        <h2>HOW TO USE</h2>
-        <dl id="howtouse">
-          <dt>ルートを読み込む</dt>
-          <dd>
-            ダウンロードした<strong>Ride With GPS</strong
-            >等の<strong>GPXファイル</strong>（トラックファイル）を、マップ上部にある「ファイル選択」から選択し、「読み込む」ボタンを押してください。
-          </dd>
-          <dt>ＰＯＩの追加</dt>
-          <dd>
-            <ol>
-              <li>マップ上をクリック・タップするとPOIが追加されます。</li>
-              <li>
-                出力ボタン上部の<strong>csv形式で一括挿入</strong>から<br />
-                【緯度,経度,POI名】のフォーマットのCSVを直接書くことでも追加できます。
-              </li>
-            </ol>
-          </dd>
-          <dt>POIの名称を編集する</dt>
-          <dd>POI一覧表から「POI名」の欄を編集してください。</dd>
-          <dt>gpxファイルを出力・利用する</dt>
-          <dd>
-            出力（ダウンロードボタン）をクリック・タップすると、<br />
-            読み込んだGPXファイルにPOI（ウェイポイント）情報を追加した新たなGPXファイルが
-            ダウンロードされます。
+      <hr />
+      <article>
+        <section>
+          <h2>WHAT IS THIS</h2>
+          <p>
+            <strong>GPX ファイル</strong>
+            （ルート・トラックファイル）を読み込み、<strong
+              >Open Street Map</strong
+            >上で、<strong>ウェイポイント</strong>(POI)を設定するWEBアプリです。<br />
+            ファイル処理はサーバー側ではなく、お使いのPC・スマホ等で行われます。あまり大きなGPXファイルをご利用ですと、処理に時間にかかる可能性がございます。ご留意ください。
             <br />
-            （ファイル名：<strong>included_poi_{元のファイル名}</strong>）
-            <br />
-            ダウンロードしたファイルをデバイスに<strong
-              style="color: red; font-size: 1.3rem"
-              ><big>USB経由でインストール</big></strong
-            >してください。<br />
-            ほとんどの場合、他サービス経由（Garmin
-            Connect等）でインストールしようとしても、POI部分は削除されます。
-          </dd>
-        </dl>
+            <strong>Ride With GPS</strong
+            >等のルートファイルを元に使用することを想定しています。
+          </p>
+          <p>
+            ※スマホ向けデザインには対応していません。ご了承ください。（いつかやります）
+          </p>
+          <b>WHY I MAKE THIS</b>
+          <br />
+          <small>
+            Ride With
+            GPSの標高補正機能を活かしたままで、課金せずにPOIのあるルートファイルを用意したかったんや……
+          </small>
+        </section>
 
-        <h3>使用したライブラリ等</h3>
-        <a href="http://www.openstreetmap.org/copyright" target="_blank">
-          OpenStreetMap
-        </a>
-        <a href="https://leafletjs.com/" target="_blank"> leaflet.js </a>
-        <a href="https://github.com/mpetazzoni/leaflet-gpx" target="_blank"
-          >leaflet-gpx</a
-        >
-        <a href="https://github.com/riversun/xml-beautify" target="_blank">
-          xml-beautify
-        </a>
+        <section>
+          <h2>HOW TO USE</h2>
+          <dl id="howtouse">
+            <dt>ルートを読み込む</dt>
+            <dd>
+              <strong>Ride With GPS</strong
+              >等からダウンロードした<strong>GPXファイル</strong>（トラックファイル）を、マップ上部にある「ファイル選択」から選択し、「読み込む」ボタンを押してください。
+            </dd>
+            <dt>ＰＯＩの追加</dt>
+            <dd>
+              <ol>
+                <li>マップ上をクリック・タップするとPOIが追加されます。</li>
+                <li>
+                  出力ボタン上部の<strong>csv形式で一括挿入</strong>から<br />
+                  【緯度,経度,POI名】のフォーマットのCSVを直接書くことでも追加できます。<br />
+                  既に経緯度情報をまとめたデータがある場合は、こちらを利用すると便利です。
+                </li>
+              </ol>
+            </dd>
+            <dt>POIの名称を編集する</dt>
+            <dd>POI一覧表から「POI名」の欄を編集してください。</dd>
+            <dt>gpxファイルを出力・利用する</dt>
+            <dd>
+              出力（ダウンロードボタン）をクリック・タップすると、<br />
+              読み込んだGPXファイルにPOI（ウェイポイント）情報を追加した新たなGPXファイルが
+              ダウンロードされます。
+              <br />
+              （ファイル名：<strong>included_poi_{元のファイル名}</strong>）
+              <br />
+              ダウンロードしたファイルをデバイスに<strong
+                style="color: red; font-size: 1.3rem"
+                ><big>USB経由でインストール</big></strong
+              >してください。<br />
+              ほとんどの場合、他サービス経由（Garmin
+              Connect等）でインストールしようとしても、POI部分は削除されます。
+            </dd>
+          </dl>
+        </section>
+
+        <section>
+          <h3>使用したライブラリ等</h3>
+          <a href="http://www.openstreetmap.org/copyright" target="_blank">
+            OpenStreetMap
+          </a>
+          <a href="https://leafletjs.com/" target="_blank"> leaflet.js </a>
+          <a href="https://github.com/mpetazzoni/leaflet-gpx" target="_blank"
+            >leaflet-gpx</a
+          >
+          <a href="https://github.com/riversun/xml-beautify" target="_blank">
+            xml-beautify
+          </a>
+        </section>
         <hr />
-        <h5>更新履歴</h5>
-        <dl>
-          <dt>2023/05/03</dt>
-          <dd>α版公開</dd>
-        </dl>
-      </section>
+        <section>
+          <h5>更新履歴</h5>
+          <dl>
+            <dt>2023/05/03</dt>
+            <dd>α版公開</dd>
+          </dl>
+        </section>
+      </article>
       <footer>
         <a href="https://twitter.com/hsnakimoen" target="_blank">©nakimoen</a>
       </footer>

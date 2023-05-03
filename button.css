@@ -1,11 +1,13 @@
 #export-button {
-  border-radius: 1rem;
-  border: none;
   padding: 1rem;
-  background-color: rgb(47, 215, 253);
   width: 80%;
 }
-#export-button:hover {
+.button-excute {
+  border-radius: 1rem;
+  border: none;
+  background-color: rgb(47, 215, 253);
+}
+.button-excute:hover {
   background-color: rgb(0, 255, 51);
 }
 .remove-button {
