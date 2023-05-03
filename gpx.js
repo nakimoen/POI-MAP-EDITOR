@@ -21,7 +21,6 @@ function loadGPX() {
     })
       .on('loaded', function (e) {
         map.fitBounds(e.target.getBounds());
-        new GpxEditor(gpxText).exportGpx();
       })
       .on('addpoint', function (e) {
         if (e.point_type == 'waypoint') {

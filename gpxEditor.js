@@ -63,31 +63,39 @@ class GpxEditor {
     // マーカー一覧取得,　xmlに追加
     const markers = MarkerTable.getMarkers();
     markers.forEach((marker, ind) => {
-      const wpt = xml.createElement('wpt');
-      wpt.setAttribute('lat', marker.lat);
-      wpt.setAttribute('lng', marker.lng);
+      const doc = new DOMParser().parseFromString(
+        `<wpt lat="${marker.lat}" lng="${marker.lng}">
+        <ele>0</ele>
+        <name>${marker.title}</name>
+        <type>CHECKPOINT</type>
+        </wpt>
+        `,
+        'text/xml'
+      );
+      const wpt = doc.querySelector('wpt'); //xml.createElement('wpt');
+      // wpt.setAttribute('lat', marker.lat);
+      // wpt.setAttribute('lng', marker.lng);
 
-      const ele = xml.createElement('ele');
-      ele.textContent = '0';
-      wpt.appendChild(ele);
+      // const ele = xml.createElement('ele');
+      // ele.textContent = '0';
+      // wpt.appendChild(ele);
 
-      const name = xml.createElement('name');
-      name.textContent = marker.title;
-      wpt.appendChild(name);
+      // const name = xml.createElement('name');
+      // name.textContent = marker.title;
+      // wpt.appendChild(name);
 
-      const type = xml.createElement('type');
-      type.textContent = 'CHECKPOINT';
-      wpt.appendChild(type);
+      // const type = xml.createElement('type');
+      // type.textContent = 'CHECKPOINT';
+      // wpt.appendChild(type);
 
       xml.querySelector('trk').insertAdjacentElement('beforebegin', wpt);
     });
 
-    const xmlstring = new XmlBeautify().beautify(
-      new XMLSerializer().serializeToString(xml),
-      {
+    const xmlstring = new XmlBeautify()
+      .beautify(new XMLSerializer().serializeToString(xml), {
         indent: '  ',
-      }
-    );
+      })
+      .replace(/xmlns="" /g, '');
 
     return xmlstring;
   };
