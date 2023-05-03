@@ -64,6 +64,10 @@ class CNX {
       { tag: 'Trakcs', value: tracksStr },
     ]);
 
+    const pc = cnx.createElement('PointsCount');
+    pc.textContent = arg.points.length;
+    cnx.querySelector('Route').appendChild(pc);
+
     const pointsdom = cnx.createElement('Points');
     arg.points.forEach((point) => {
       const pointdom = cnx.createElement('Point');
@@ -77,16 +81,20 @@ class CNX {
       const typedom = cnx.createElement('Type');
       typedom.textContent = 0;
 
-      pointdom
-        .appendChild(latdom)
-        .appendChild(lngdom)
-        .appendChild(descdom)
-        .appendChild(typedom);
+      pointdom.appendChild(latdom);
+      pointdom.appendChild(lngdom);
+      pointdom.appendChild(descdom);
+      pointdom.appendChild(typedom);
 
       pointsdom.appendChild(pointdom);
     });
     cnx.querySelector('Route').appendChild(pointsdom);
 
-    return new XMLSerializer().serializeToString(cnx);
+    return (
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' +
+      new XmlBeautify().beautify(new XMLSerializer().serializeToString(cnx), {
+        indent: '  ',
+      })
+    );
   }
 }

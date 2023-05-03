@@ -242,14 +242,30 @@ document.querySelector('#csv-insert-button').addEventListener('click', loadCSV);
 //
 // 出力
 //
-document.querySelector('#wrapper-markers');
-function onExport() {
+
+function download(str, filename) {
+  // ダウンロード
+  const blob = new Blob([str], { type: 'text/xml' });
+  const link = document.createElement('a');
+  link.download = 'poi_included_' + filename;
+  link.href = URL.createObjectURL(blob);
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+function onExport(type) {
   const gpxeditor = new GpxEditor(window.GPX_TEXT);
   if (!gpxeditor.getValid()) {
     alert('ファイルを読み込めませんでした。');
     return;
   }
-  gpxeditor.exportGpx();
+  const { xmlstring, filename } = ((type) => {
+    if (type == 'gpx') return gpxeditor.exportGpx();
+    else if (type == 'cnx') return exportCNX();
+    return null;
+  })(type);
+  if (!xmlstring || !filename) return alert('ファイルの出力に失敗しました');
+  download(xmlstring, filename);
 }
 
 function exportCNX() {
@@ -269,6 +285,5 @@ function exportCNX() {
     distance: window.GPX_INFO.distance,
     points: points,
   });
-
-  console.log(cnxstr);
+  return { xmlstring: cnxstr, filename: 'cnx_route.cnx' };
 }

@@ -44,13 +44,7 @@ class GpxEditor {
     }
     const xmlstring = this.#edit();
 
-    // ダウンロード
-    const blob = new Blob([xmlstring], { type: 'text/xml' });
-    const link = document.createElement('a');
-    link.download = 'poi_included_' + this.#filename;
-    link.href = URL.createObjectURL(blob);
-    link.click();
-    URL.revokeObjectURL(link.href);
+    return { xmlstring, filename: this.#filename };
   }
 
   #edit = function () {
@@ -72,21 +66,7 @@ class GpxEditor {
         `,
         'text/xml'
       );
-      const wpt = doc.querySelector('wpt'); //xml.createElement('wpt');
-      // wpt.setAttribute('lat', marker.lat);
-      // wpt.setAttribute('lng', marker.lng);
-
-      // const ele = xml.createElement('ele');
-      // ele.textContent = '0';
-      // wpt.appendChild(ele);
-
-      // const name = xml.createElement('name');
-      // name.textContent = marker.title;
-      // wpt.appendChild(name);
-
-      // const type = xml.createElement('type');
-      // type.textContent = 'CHECKPOINT';
-      // wpt.appendChild(type);
+      const wpt = doc.querySelector('wpt');
 
       xml.querySelector('trk').insertAdjacentElement('beforebegin', wpt);
     });

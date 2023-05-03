@@ -54,13 +54,18 @@
                 </div>
               </details>
             </div>
-            <form id="marker-form" onsubmit="onExport();return false">
+            <form id="marker-form" onsubmit="return false">
               <div id="wrapper-export">
                 <input
                   type="submit"
                   id="export-button"
                   value="出力（ダウンロード）"
+                  onclick="onExport('gpx');"
                 />
+                <br />
+                <button type="submit" onclick="onExport('cnx')">
+                  igs用cnxファイル
+                </button>
               </div>
               <div id="wrapper-marker-table">
                 POI一覧表
