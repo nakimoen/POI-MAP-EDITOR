@@ -64,7 +64,7 @@ class GpxEditor {
     const markers = MarkerTable.getMarkers();
     markers.forEach((marker, ind) => {
       const doc = new DOMParser().parseFromString(
-        `<wpt lat="${marker.lat}" lng="${marker.lng}">
+        `<wpt lat="${marker.lat}" lon="${marker.lng}">
         <ele>0</ele>
         <name>${marker.title}</name>
         <type>CHECKPOINT</type>

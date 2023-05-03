@@ -251,3 +251,24 @@ function onExport() {
   }
   gpxeditor.exportGpx();
 }
+
+function exportCNX() {
+  const points = Array.from(
+    MarkerTable.getTable().querySelectorAll('tbody tr')
+  ).reduce((acc, tr) => {
+    acc.push({
+      lat: tr.querySelector('.lat').value,
+      lng: tr.querySelector('.lng').value,
+      title: tr.querySelector('.title').value,
+    });
+    return acc;
+  }, []);
+  const cnxstr = new CNX(window.GPX_TEXT).parseGPX({
+    ascent: window.GPX_INFO.ascent,
+    descent: window.GPX_INFO.descent,
+    distance: window.GPX_INFO.distance,
+    points: points,
+  });
+
+  console.log(cnxstr);
+}

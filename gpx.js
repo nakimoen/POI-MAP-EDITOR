@@ -1,5 +1,15 @@
 'use strict';
 window.GPX_TEXT = null;
+/**
+ * @typedef {Object} GpxInfo
+ * @prop {string} distance
+ * @prop {string} ascent
+ * @prop {string} descent
+ */
+/**
+ * @type {GpxInfo}
+ */
+window.GPX_INFO = null;
 // gpx ファイル読み込み
 function loadGPX() {
   const file = document.getElementById('gpx-file').files[0];
@@ -20,7 +30,13 @@ function loadGPX() {
       },
     })
       .on('loaded', function (e) {
-        map.fitBounds(e.target.getBounds());
+        const target = e.target;
+        map.fitBounds(target.getBounds());
+        window.GPX_INFO = {
+          distance: target.get_distance(),
+          ascent: target.get_elevation_gain(),
+          descent: target.get_elevation_loss(),
+        };
       })
       .on('addpoint', function (e) {
         if (e.point_type == 'waypoint') {
