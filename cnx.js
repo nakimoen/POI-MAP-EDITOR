@@ -54,10 +54,10 @@ class CNX {
     }
     insert(cnx, 'Route', [
       { tag: 'Id', value: null },
-      { tag: 'Distance', value: arg.distance },
+      { tag: 'Distance', value: Math.round(arg.distance) },
       { tag: 'Duration', value: null },
-      { tag: 'Ascent', value: arg.ascent },
-      { tag: 'Descent', value: arg.descent },
+      { tag: 'Ascent', value: Math.round(arg.ascent) },
+      { tag: 'Descent', value: 0 - Math.round(arg.descent) },
       { tag: 'Encode', value: '0' },
       { tag: 'Lang', value: '0' },
       { tag: 'TracksCount', value: '' + trkpts.length },
@@ -74,7 +74,7 @@ class CNX {
 
       const latdom = cnx.createElement('Lat');
       latdom.textContent = point.lat;
-      const lngdom = cnx.createElement('Lon');
+      const lngdom = cnx.createElement('Lng');
       lngdom.textContent = point.lng;
       const descdom = cnx.createElement('Descr');
       descdom.textContent = point.title;
