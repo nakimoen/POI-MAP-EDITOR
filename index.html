@@ -17,6 +17,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css"
     />
     <link rel="stylesheet" href="./button.css" />
+    <link rel="stylesheet" href="./mark.css" />
   </head>
   <body>
     <main>
@@ -25,51 +26,80 @@
         >現在試験的運用中のため検証が不十分な状態です。何卒ご理解ください。</span
       >
       <div>
-        <div id="wrapper-file">
-          <label for="gpx-file">GPXファイルの読み込み</label>
-          <br />
-          <input type="file" name="gpx-file" id="gpx-file" accept=".gpx" />
-          <br />
-          <button type="button" class="button-excute" id="load-gpx-button">
-            読み込む
-          </button>
+        <div id="wrapper-head">
+          <div id="wrapper-file">
+            <label id="gpx-file-label" for="gpx-file" class="button-excute">
+              GPXファイルの読み込み
+              <input type="file" name="gpx-file" id="gpx-file" accept=".gpx" />
+            </label>
+            <p id="gpx-file-message">ファイルが選択されていません</p>
+          </div>
+          <div id="wrapper-csv-read">
+            <details>
+              <summary>
+                csv形式で一括挿入（既に位置情報データ持っている場合等）
+              </summary>
+              <div>
+                <legend>csvフォーマット</legend>
+                <pre>緯度,経度,POI名</pre>
+                <textarea
+                  id="csv-text"
+                  cols="30"
+                  rows="10"
+                  placeholder="35.68148019312498, 139.7671569845131, 東京駅"
+                ></textarea>
+                <div id="container-csv-insert-button">
+                  <button
+                    type="button"
+                    id="csv-insert-button"
+                    class="button-excute"
+                  >
+                    挿入
+                  </button>
+                </div>
+              </div>
+            </details>
+          </div>
         </div>
+        <hr />
         <div id="wrapper-editor">
           <div id="wrapper-map" class="container-box">
             <div id="map"></div>
           </div>
 
           <div id="wrapper-markers" class="container-box">
-            <div id="wrapper-csv-read">
-              <details>
-                <summary>csv形式で一括挿入</summary>
-                <div>
-                  <legend>csvフォーマット</legend>
-                  <pre>緯度,経度,POI名</pre>
-                  <textarea
-                    id="csv-text"
-                    cols="30"
-                    rows="10"
-                    placeholder="35.68148019312498, 139.7671569845131, 東京駅"
-                  ></textarea>
-                  <br />
-                  <button type="button" id="csv-insert-button">挿入</button>
-                </div>
-              </details>
-            </div>
             <form id="marker-form" onsubmit="return false">
               <div id="wrapper-export">
+                <label>
+                  <input
+                    type="radio"
+                    name="download-type"
+                    value="gpx"
+                    checked
+                  />GPX
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="download-type"
+                    value="cnx"
+                  />CNX(igs用)
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="download-type"
+                    value="tcx"
+                    disabled
+                  />TCX(未実装)
+                </label>
                 <input
                   type="submit"
                   id="export-button"
                   class="button-excute"
                   value="出力（ダウンロード）"
-                  onclick="onExport('gpx');"
+                  onclick="onExport();"
                 />
-                <br />
-                <button type="submit" onclick="onExport('cnx')">
-                  igs用cnxファイル
-                </button>
               </div>
               <div id="wrapper-marker-table">
                 POI一覧表
@@ -135,7 +165,27 @@
           </div>
         </div>
       </div>
-
+      <div id="wrapper-graph">
+        <div id="graph-container"></div>
+        <div>
+          <table>
+            <tbody>
+              <tr>
+                <th>距離</th>
+                <td></td>
+              </tr>
+              <tr>
+                <th>獲得標高(+)</th>
+                <td></td>
+              </tr>
+              <tr>
+                <th>獲得標高(-)</th>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
       <hr />
       <article>
         <section>
@@ -145,7 +195,9 @@
             （ルート・トラックファイル）を読み込み、<strong
               >Open Street Map</strong
             >上で、<strong>ウェイポイント</strong>(POI)を設定するWEBアプリです。<br />
-            ファイル処理はサーバー側ではなく、お使いのPC・スマホ等で行われます。あまり大きなGPXファイルをご利用ですと、処理に時間にかかる可能性がございます。ご留意ください。
+            諸処理はサーバー側ではなく、お使いのPC・スマホ等で行われます。大きなGPXファイルだと、処理に時間にかかる可能性があります。
+            <br />
+            その場合は、間引きしたGPXファイルをお使いください。
             <br />
             <strong>Ride With GPS</strong
             >等のルートファイルを元に使用することを想定しています。
@@ -202,28 +254,84 @@
 
         <section>
           <h3>使用したライブラリ等</h3>
-          <a href="http://www.openstreetmap.org/copyright" target="_blank">
-            OpenStreetMap
-          </a>
-          <a href="https://leafletjs.com/" target="_blank"> leaflet.js </a>
-          <a href="https://github.com/mpetazzoni/leaflet-gpx" target="_blank"
-            >leaflet-gpx</a
-          >
-          <a href="https://github.com/riversun/xml-beautify" target="_blank">
-            xml-beautify
-          </a>
+          <dl>
+            <dt>
+              <a
+                href="http://www.openstreetmap.org/copyright"
+                target="_blank"
+                rel="noopener"
+              >
+                OpenStreetMap
+              </a>
+            </dt>
+            <dd>地図</dd>
+            <dt>
+              <a href="https://leafletjs.com/" target="_blank" rel="noopener">
+                leaflet.js
+              </a>
+            </dt>
+            <dd>地図にピンを表示</dd>
+            <dt>
+              <a
+                href="https://github.com/mpetazzoni/leaflet-gpx"
+                target="_blank"
+                rel="noopener"
+              >
+                leaflet-gpx
+              </a>
+            </dt>
+            <dd>地図にルートを表示</dd>
+            <dt>
+              <a
+                href="https://github.com/riversun/xml-beautify"
+                target="_blank"
+                rel="noopener"
+              >
+                xml-beautify
+              </a>
+            </dt>
+            <dd>gpxファイルの整形</dd>
+            <dt>
+              <a
+                href="https://www.highcharts.com/"
+                target="_blank"
+                rel="noopener"
+              >
+                Highcharts
+              </a>
+            </dt>
+            <dd>標高グラフの表示</dd>
+          </dl>
         </section>
         <hr />
         <section>
           <h5>更新履歴</h5>
           <dl>
+            <dt>2023/05/04</dt>
+            <dd>
+              <ul>
+                <li>レイアウト微調整</li>
+                <li>コース情報（標高グラフ等）の追加</li>
+                <li>ボタン押下時のリファクタリング</li>
+              </ul>
+            </dd>
             <dt>2023/05/03</dt>
             <dd>α版公開</dd>
           </dl>
         </section>
       </article>
       <footer>
-        <a href="https://twitter.com/hsnakimoen" target="_blank">©nakimoen</a>
+        ©nakimoen
+        <a href="https://twitter.com/hsnakimoen" target="_blank" rel="noopener">
+          Twitter
+        </a>
+        <a
+          href="https://github.com/nakimoen/POI-MAP-EDITOR"
+          target="_blank"
+          rel="noopener"
+        >
+          github
+        </a>
       </footer>
     </main>
 
@@ -234,9 +342,10 @@
     ></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xml-beautify@1.2.3/dist/XmlBeautify.js"></script>
-    <script src="./script.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="./utils.js"></script>
     <script src="./gpx.js"></script>
-    <script src="./gpxEditor.js"></script>
     <script src="./cnx.js"></script>
+    <script src="./script.js"></script>
   </body>
 </html>

@@ -1,4 +1,36 @@
 'use strict';
+//TODO: 構造整理
+
+document.getElementById('gpx-file').addEventListener('click', function () {
+  if (window.GPX_LOADED) {
+    if (confirm('新たにGPXファイルを読み込むと、現在の状態が全て消えます。')) {
+      location.reload();
+    } else {
+      return;
+    }
+  }
+});
+document.getElementById('gpx-file').addEventListener('change', function () {
+  const file = this.files[0];
+  document.getElementById('gpx-file-message').textContent = file
+    ? `${file.name}(${file.size / 1000}KB)`
+    : 'ファイルが選択されていません';
+  if (file) {
+    loadGPX(map, function (e) {
+      document.querySelector(
+        '#wrapper-graph table tr:nth-child(1) td'
+      ).textContent = window.GPX_INFO.distance;
+      document.querySelector(
+        '#wrapper-graph table tr:nth-child(2) td'
+      ).textContent = window.GPX_INFO.ascent;
+      document.querySelector(
+        '#wrapper-graph table tr:nth-child(3) td'
+      ).textContent = window.GPX_INFO.descent;
+
+      showGraph();
+    });
+  }
+});
 /**
  * @typedef {Object} LatLng
  * @prop {string|number} lat 緯度
@@ -23,6 +55,24 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution:
     '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 }).addTo(map);
+
+/**
+ * マップ中央部にクロスマーカー
+ */
+const cross = L.divIcon({
+  className: 'cross',
+  bgPos: [18, 18],
+});
+const crossMark = L.marker(map.getCenter(), {
+  icon: cross,
+  zIndexOffset: 100,
+  interactive: false,
+}).addTo(map);
+
+map.on('move', function () {
+  // mousemoveイベントでマーカを移動
+  crossMark.setLatLng(map.getCenter());
+});
 
 /**
  * マップにマーカーを追加する
@@ -253,7 +303,10 @@ function download(str, filename) {
   URL.revokeObjectURL(link.href);
 }
 
-function onExport(type) {
+function onExport() {
+  const type = document.querySelector(
+    'input[name="download-type"]:checked'
+  ).value;
   const gpxeditor = new GpxEditor(window.GPX_TEXT);
   if (!gpxeditor.getValid()) {
     alert('ファイルを読み込めませんでした。');
@@ -286,4 +339,36 @@ function exportCNX() {
     points: points,
   });
   return { xmlstring: cnxstr, filename: 'cnx_route.cnx' };
+}
+
+function showGraph() {
+  const eledata = window.ELEVATION_DATA;
+
+  let tmpDistance = 0;
+  const dataPoints = eledata.reduce((acc, cur) => {
+    const distance = parseInt(cur[0] * 10);
+
+    if (tmpDistance != distance) acc.push([distance / 10, cur[1]]);
+    return acc;
+  }, []);
+
+  const chart = Highcharts.chart('graph-container', {
+    chart: {
+      type: 'spline',
+    },
+    title: {
+      text: '距離―標高',
+    },
+    yAxis: {
+      title: {
+        text: '標高',
+      },
+    },
+    xAxis: {
+      title: {
+        text: '距離',
+      },
+    },
+    series: [{ name: '標高', data: dataPoints }],
+  });
 }

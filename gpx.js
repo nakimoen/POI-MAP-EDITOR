@@ -1,4 +1,5 @@
 'use strict';
+//TODO: クラス化
 window.GPX_TEXT = null;
 /**
  * @typedef {Object} GpxInfo
@@ -10,8 +11,18 @@ window.GPX_TEXT = null;
  * @type {GpxInfo}
  */
 window.GPX_INFO = null;
+
+/**
+ * @type {Array<string[]|number[]>}
+ * @description 0:累積標高,1:標高, 2:距離
+ */
+window.ELEVATION_DATA = [];
+
+window.ELEVATION_MAX = 0;
+
+window.GPX_LOADED = false;
 // gpx ファイル読み込み
-function loadGPX() {
+function loadGPX(map, onloaded) {
   const file = document.getElementById('gpx-file').files[0];
   const reader = new FileReader();
   reader.onload = () => {
@@ -37,6 +48,12 @@ function loadGPX() {
           ascent: target.get_elevation_gain(),
           descent: target.get_elevation_loss(),
         };
+
+        window.ELEVATION_DATA = target.get_elevation_data();
+        window.ELEVATION_MAX = target.get_elevation_max();
+
+        window.GPX_LOADED = true;
+        if (onloaded) onloaded(target);
       })
       .on('addpoint', function (e) {
         if (e.point_type == 'waypoint') {
@@ -62,4 +79,86 @@ function loadGPX() {
 
   reader.readAsText(file);
 }
-document.getElementById('load-gpx-button').addEventListener('click', loadGPX);
+
+class GpxEditor {
+  /**
+   * @type {string} gpx
+   */
+  #gpx;
+  /**
+   * @type {string} filename
+   */
+  #filename;
+
+  /**
+   * @type {boolean} valid
+   */
+  #valid;
+  /**
+   *
+   * @param {string} gpx gpx text
+   */
+  constructor(gpx) {
+    // HACK: インスタンス生成失敗
+    this.#gpx = gpx;
+    const file = document.getElementById('gpx-file').files[0];
+    if (file) {
+      this.#filename = file.name;
+    }
+    this.#valid = gpx && file;
+  }
+
+  getValid() {
+    return this.#valid;
+  }
+  setGpx(gpxText) {
+    this.#gpx = gpxText;
+  }
+
+  getGpx() {
+    return this.#gpx;
+  }
+
+  exportGpx() {
+    if (!this.#gpx) {
+      return alert('[0]出力に失敗しました。');
+    }
+    const xmlstring = this.#edit();
+
+    return { xmlstring, filename: this.#filename };
+  }
+
+  #edit = function () {
+    // waypoint 削除
+    const xml = new DOMParser().parseFromString(this.#gpx, 'text/xml');
+    xml.querySelectorAll('wpt').forEach((wpt) => {
+      wpt.remove();
+    });
+
+    // マーカー一覧取得,　xmlに追加
+    const markers = MarkerTable.getMarkers();
+    markers.forEach((marker, ind) => {
+      const doc = new DOMParser().parseFromString(
+        `<wpt lat="${marker.lat}" lon="${marker.lng}">
+        <ele>0</ele>
+        <name>${marker.title}</name>
+        <type>CHECKPOINT</type>
+        </wpt>
+        `,
+        'text/xml'
+      );
+      const wpt = doc.querySelector('wpt');
+
+      xml.querySelector('trk').insertAdjacentElement('beforebegin', wpt);
+    });
+
+    // HACK: wptタグの xmlns属性の消し方
+    const xmlstring = new XmlBeautify()
+      .beautify(new XMLSerializer().serializeToString(xml), {
+        indent: '  ',
+      })
+      .replace(/xmlns="" /g, '');
+
+    return xmlstring;
+  };
+}
