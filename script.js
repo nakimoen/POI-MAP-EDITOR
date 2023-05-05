@@ -27,7 +27,7 @@ document.getElementById('gpx-file').addEventListener('change', function () {
         '#wrapper-graph table tr:nth-child(3) td'
       ).textContent = window.GPX_INFO.descent;
 
-      showGraph();
+      showGraph(graphMouseOver, graphMouseOut);
     });
   }
 });
@@ -46,6 +46,7 @@ function isLatLngString(string) {
 }
 
 const map = L.map('map').setView([35.68148019312498, 139.7671569845131], 8);
+let currentMarker;
 let MARKER_LIST = [];
 let NEXT_MARKER_ID = 0;
 
@@ -341,16 +342,45 @@ function exportCNX() {
   return { xmlstring: cnxstr, filename: 'cnx_route.cnx' };
 }
 
-function showGraph() {
+function graphMouseOver(e) {
+  const latlng = { lat: e.target.lat, lng: e.target.lng };
+  if (!currentMarker) {
+    // currentMarker = L.marker(latlng).addTo(map);
+    const current = L.divIcon({
+      className: 'currentPoint',
+      bgPos: [18, 18],
+    });
+    currentMarker = L.marker(latlng, {
+      icon: current,
+      zIndexOffset: 100,
+      interactive: false,
+    }).addTo(map);
+  }
+
+  currentMarker.setLatLng(latlng);
+}
+function graphMouseOut() {
+  currentMarker.remove();
+  currentMarker = null;
+}
+function showGraph(onMouseOver, onMouseOut) {
   const eledata = window.ELEVATION_DATA;
 
   let tmpDistance = 0;
-  const dataPoints = eledata.reduce((acc, cur) => {
+  const data = eledata.reduce((acc, cur) => {
     const distance = parseInt(cur[0] * 10);
 
     if (tmpDistance != distance) {
-      acc.push([distance / 10, cur[1]]);
+      // acc.push([distance / 10, cur[1]]);
       tmpDistance = distance;
+      const item = {
+        x: distance / 10,
+        y: cur[1],
+        name: cur[2].split(' ')[0] + 'km',
+        lat: cur[3],
+        lng: cur[4],
+      };
+      acc.push(item);
     }
     return acc;
   }, []);
@@ -372,6 +402,25 @@ function showGraph() {
         text: '距離',
       },
     },
-    series: [{ name: '標高', data: dataPoints }],
+    series: [{ name: '標高', data: data }],
+    plotOptions: {
+      series: {
+        turboThreshold: 0,
+        point: {
+          events: {
+            mouseOver: function (e) {
+              if (onMouseOver) {
+                onMouseOver(e);
+              }
+            },
+            mouseOut: function (e) {
+              if (onMouseOut) {
+                onMouseOut(e);
+              }
+            },
+          },
+        },
+      },
+    },
   });
 }

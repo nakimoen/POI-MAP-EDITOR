@@ -38,6 +38,9 @@ function loadGPX(map, onloaded) {
         },
         shadowUrl:
           'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+        startIconUrl: '/pin-icon-start.png',
+        endIconUrl: '/pin-icon-end.png',
+        // shadowUrl: 'pin-shadow.png',
       },
     })
       .on('loaded', function (e) {

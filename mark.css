@@ -26,3 +26,13 @@
   border-right: 13px solid black;
   border-radius: 2px;
 }
+
+.currentPoint {
+  color: black;
+  background: transparent;
+  width: 24px;
+  height: 24px;
+  border: 1px crimson solid;
+  border-radius: 50%;
+  background-color: rgba(240, 105, 132, 0.4);
+}
