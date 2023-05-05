@@ -333,7 +333,7 @@ function exportCNX() {
     });
     return acc;
   }, []);
-  const cnxstr = new CNX(window.GPX_TEXT).parseGPX({
+  const cnxstr = new CNX(window.GPX_TEXT).gpx2cnx({
     ascent: window.GPX_INFO.ascent,
     descent: window.GPX_INFO.descent,
     distance: window.GPX_INFO.distance,
@@ -368,13 +368,13 @@ function showGraph(onMouseOver, onMouseOut) {
 
   let tmpDistance = 0;
   const data = eledata.reduce((acc, cur) => {
-    const distance = parseInt(cur[0] * 10);
+    const distance = parseInt(cur[0] * 10) / 10;
 
     if (tmpDistance != distance) {
       // acc.push([distance / 10, cur[1]]);
       tmpDistance = distance;
       const item = {
-        x: distance / 10,
+        x: distance,
         y: cur[1],
         name: cur[2].split(' ')[0] + 'km',
         lat: cur[3],
