@@ -36,8 +36,8 @@ class CNX {
 
     const trkpts = Array.from(trk.querySelectorAll('trkseg trkpt'));
     const tracksStr = trkpts.reduce((acc, trkpt) => {
-      const lat = trkpt.getAttribute('lat');
-      const lng = trkpt.getAttribute('lon');
+      const lat = Math.round(trkpt.getAttribute('lat') * 100000) / 100000;
+      const lng = Math.round(trkpt.getAttribute('lon') * 100000) / 100000;
       const ele = ((elevation) => {
         return parseInt((elevation * 10000) / 100);
       })(trkpt.querySelector('ele').textContent);
@@ -61,7 +61,8 @@ class CNX {
       { tag: 'Encode', value: '0' },
       { tag: 'Lang', value: '0' },
       { tag: 'TracksCount', value: '' + trkpts.length },
-      { tag: 'Trakcs', value: tracksStr },
+      { tag: 'Tracks', value: tracksStr },
+      { tag: 'Navs', value: null },
     ]);
 
     const pc = cnx.createElement('PointsCount');
@@ -76,15 +77,15 @@ class CNX {
       latdom.textContent = point.lat;
       const lngdom = cnx.createElement('Lng');
       lngdom.textContent = point.lng;
-      const descdom = cnx.createElement('Descr');
-      descdom.textContent = point.title;
       const typedom = cnx.createElement('Type');
       typedom.textContent = 0;
+      const descdom = cnx.createElement('Descr');
+      descdom.textContent = point.title;
 
       pointdom.appendChild(latdom);
       pointdom.appendChild(lngdom);
-      pointdom.appendChild(descdom);
       pointdom.appendChild(typedom);
+      pointdom.appendChild(descdom);
 
       pointsdom.appendChild(pointdom);
     });

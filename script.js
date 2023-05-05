@@ -348,7 +348,10 @@ function showGraph() {
   const dataPoints = eledata.reduce((acc, cur) => {
     const distance = parseInt(cur[0] * 10);
 
-    if (tmpDistance != distance) acc.push([distance / 10, cur[1]]);
+    if (tmpDistance != distance) {
+      acc.push([distance / 10, cur[1]]);
+      tmpDistance = distance;
+    }
     return acc;
   }, []);
 
