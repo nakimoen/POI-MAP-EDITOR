@@ -17,15 +17,15 @@ document.getElementById('gpx-file').addEventListener('change', function () {
     : 'ファイルが選択されていません';
   if (file) {
     loadGPX(map, function (e) {
-      document.querySelector(
-        '#wrapper-graph table tr:nth-child(1) td'
-      ).textContent = window.GPX_INFO.distance;
-      document.querySelector(
-        '#wrapper-graph table tr:nth-child(2) td'
-      ).textContent = window.GPX_INFO.ascent;
-      document.querySelector(
-        '#wrapper-graph table tr:nth-child(3) td'
-      ).textContent = window.GPX_INFO.descent;
+      // document.querySelector(
+      //   '#wrapper-graph table tr:nth-child(1) td'
+      // ).textContent = window.GPX_INFO.distance;
+      // document.querySelector(
+      //   '#wrapper-graph table tr:nth-child(2) td'
+      // ).textContent = window.GPX_INFO.ascent;
+      // document.querySelector(
+      //   '#wrapper-graph table tr:nth-child(3) td'
+      // ).textContent = window.GPX_INFO.descent;
 
       showGraph(graphMouseOver, graphMouseOut);
     });
@@ -221,6 +221,30 @@ class MarkerTable {
   }
 }
 
+/**
+ *
+ * @param {HTMLElement} self
+ */
+function onMarkerRowMoveClick(self) {
+  const direction = self.dataset['dir'];
+  const tr = self.closest('tr');
+
+  MarkerTable.clearActive();
+  tr.classList.add('active');
+
+  if (direction == 'down') {
+    const next = tr.nextElementSibling;
+    if (next) {
+      next.insertAdjacentElement('afterend', tr);
+    }
+  } else if (direction == 'up') {
+    const prev = tr.previousElementSibling;
+    if (prev) {
+      prev.insertAdjacentElement('beforebegin', tr);
+    }
+  }
+}
+
 function onMarkerTableRowClick(tr) {
   MarkerTable.clearActive();
   tr.classList.add('active');
@@ -396,11 +420,16 @@ function showGraph(onMouseOver, onMouseOut) {
       title: {
         text: '標高',
       },
+      min: 0,
+      minRange: 0.1,
     },
     xAxis: {
       title: {
         text: '距離',
       },
+    },
+    legend: {
+      enabled: false,
     },
     series: [{ name: '標高', data: data }],
     plotOptions: {
