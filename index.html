@@ -5,19 +5,10 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>POI MAP EDITOR</title>
-    <link rel="stylesheet" href="./style.css" />
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
-      integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI="
-      crossorigin=""
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css"
-    />
-    <link rel="stylesheet" href="./button.css" />
-    <link rel="stylesheet" href="./mark.css" />
+    <link rel="stylesheet" href="/lib/leaflet/leaflet.css" />
+    <link rel="stylesheet" href="/style/button.css" />
+    <link rel="stylesheet" href="/style/mark.css" />
+    <link rel="stylesheet" href="/style/style.css" />
   </head>
   <body>
     <main>
@@ -33,6 +24,27 @@
               <input type="file" name="gpx-file" id="gpx-file" accept=".gpx" />
             </label>
             <p id="gpx-file-message">ファイルが選択されていません</p>
+          </div>
+          <div id="wrapper-load-cue">
+            <label for="cue-file">キューシート読み込み(TCXファイル)</label>
+            <label for="koma-load-interval">コマ図生成間隔(秒)</label>
+            <input
+              type="number"
+              id="koma-load-interval"
+              min="0"
+              step="1"
+              value="2"
+            />
+            <br />
+            <input
+              type="file"
+              name="cue-file"
+              id="cue-file"
+              accept=".tcx"
+              disabled
+            />
+            <br />
+            <small>（※gpxファイルを先に読み込んでください）</small>
           </div>
           <div id="wrapper-csv-read">
             <details>
@@ -205,29 +217,37 @@
         </div> -->
       </div>
       <hr />
+      <div id="wrapper-koma">
+        <article></article>
+      </div>
       <article>
         <section>
           <h2>WHAT IS THIS</h2>
           <p>
+            <strong>
+              Ride With GPS
+            </strong>
+            等のルートファイルを元に使用することを想定しています。
+            <br>
+            <br>
             <strong>GPX ファイル</strong>
             （ルート・トラックファイル）を読み込み、<strong
               >Open Street Map</strong
             >上で、<strong>ウェイポイント</strong>(POI)を設定するWEBアプリです。<br />
             諸処理はサーバー側ではなく、お使いのPC・スマホ等で行われます。大きなGPXファイルだと、処理に時間にかかる可能性があります。
             <br />
-            その場合は、間引きしたGPXファイルをお使いください。
-            <br />
-            <strong>Ride With GPS</strong
-            >等のルートファイルを元に使用することを想定しています。
+            大きなGPXファイルを使う場合は、間引きしたGPXファイルの使用をご検討ください。
           </p>
           <p>
             ※スマホ向けデザインには対応していません。ご了承ください。（いつかやります）
           </p>
-          <b>WHY I MAKE THIS</b>
+          <b>WHY MAKE THIS</b>
           <br />
+          Ride With GPSの標高補正機能を活かしたままで、課金せずにPOIのあるルートファイルを用意したかったんや……
+          <br>
           <small>
-            Ride With
-            GPSの標高補正機能を活かしたままで、課金せずにPOIのあるルートファイルを用意したかったんや……
+            あと、igs用CNXファイルをPCで用意したかった。<br>
+            POI設定がスマホ公式アプリ経由でしかできない＆それが使いにくい（スマホあんまり使わないこともあいまって、表示領域のデザインがクソで無理すぎる）
           </small>
         </section>
 
@@ -260,19 +280,30 @@
               <br />
               （ファイル名：<strong>included_poi_{元のファイル名}</strong>）
               <br />
-              ダウンロードしたファイルをデバイスに<strong
-                style="color: red; font-size: 1.3rem"
-                ><big>USB経由でインストール</big></strong
-              >してください。<br />
-              ほとんどの場合、他サービス経由（Garmin
-              Connect等）でインストールしようとしても、POI部分は削除されます。
+              <br />
+              ※アプリやWEBサービス経由でデバイスにgpxファイルを入れる際、標高データの改変やPOIデータ削除が行われてしまう場合があります。（Garmin
+              Connect等）
+              <br />
+              その場合は、USB経由で入れてください。
             </dd>
           </dl>
+          <hr />
+          <h5>コマ図生成機能（α以前状態）</h5>
+          <p>まだまだ整備したりない機能です</p>
+          <p>使い方：ただのメモ状態</p>
+          <p>
+            Ride With GPSのファイルを扱うことが前提<br />
+            gpx読み込み->tcx読み込み<br />
+            簡易コマ図を表示<br />
+            <b>gpxとtcxが同じルートであることを要確認</b><br />
+            <h6>展望</h6>
+            TCXファイルのみの読み込みにする
+          </p>
         </section>
 
         <section>
-          <h2>CONTACT ME</h2>
-          バグ報告等はTwitterまでよろしくお願いします。
+          <h2>CONTACT</h2>
+          バグ報告・要望等はTwitterまでよろしくお願いします。リプ・DMどちらでも構いません。
           <br />
           <a
             href="https://twitter.com/hsnakimoen"
@@ -323,6 +354,16 @@
             <dd>gpxファイルの整形</dd>
             <dt>
               <a
+                href="https://html2canvas.hertzen.com/"
+                target="_blank"
+                rel="noopener"
+              >
+                html2canvas
+              </a>
+            </dt>
+            <dd>コマ図用画像生成</dd>
+            <dt>
+              <a
                 href="https://www.highcharts.com/"
                 target="_blank"
                 rel="noopener"
@@ -337,6 +378,10 @@
         <section>
           <h5>更新履歴</h5>
           <dl>
+            <dt>2023/05/18</dt>
+            <dd>
+              コマ図生成機能（α以前状態）
+            </dd>
             <dt>2023/05/04</dt>
             <dd>
               <ul>
@@ -366,19 +411,22 @@
       </footer>
     </main>
 
-    <script
-      src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
-      integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM="
-      crossorigin=""
-    ></script>
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script> -->
+    <div id="lock-window">
+      <p>
+        please wait......
+      </p>
+    </div>
+
+    <script src="/lib/leaflet/leaflet.js"></script>
     <script src="/lib/leaflet-gpx-modified-by-nakimoen.@1.7.0.js"></script>
+    <script src="/lib/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xml-beautify@1.2.3/dist/XmlBeautify.js"></script>
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/modules/accessibility.js"></script>
-    <script src="./utils.js"></script>
-    <script src="./gpx.js"></script>
-    <script src="./cnx.js"></script>
-    <script src="./script.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/gpx.js"></script>
+    <script src="/js/cnx.js"></script>
+    <script src="/js/koma.js"></script>
+    <script src="/js/script.js"></script>
   </body>
 </html>

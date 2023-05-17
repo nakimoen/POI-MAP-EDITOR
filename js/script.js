@@ -28,9 +28,24 @@ document.getElementById('gpx-file').addEventListener('change', function () {
       // ).textContent = window.GPX_INFO.descent;
 
       showGraph(graphMouseOver, graphMouseOut);
+      document.querySelector('#cue-file').removeAttribute('disabled');
     });
   }
 });
+
+document.getElementById('cue-file').addEventListener('change', function () {
+  const file = this.files[0];
+  const reader = new FileReader();
+  reader.onload = () => {
+    const text = reader.result;
+    const komazu = new TCX_KOMAZU();
+    komazu.loadtcx(text);
+    const inteval = document.querySelector('#koma-load-interval').value * 1000;
+    komazu.makeKomaArticle(map, inteval);
+  };
+  reader.readAsText(file);
+});
+
 /**
  * @typedef {Object} LatLng
  * @prop {string|number} lat 緯度
@@ -177,7 +192,7 @@ class MarkerTable {
       .content.firstElementChild.cloneNode(true);
     newRow.dataset['id'] = id;
     newRow.querySelector('.lat').value = latlng.lat;
-    newRow.querySelector('.lng').value = latlng.lng;
+    newRow.querySelector('.lng').value = latlng.lng || latlng.lon;
     if (title) newRow.querySelector('.title').value = title;
 
     this.#table.querySelector('tbody').appendChild(newRow);
@@ -252,7 +267,7 @@ function onMarkerTableRowClick(tr) {
   const marker = MARKER_LIST.filter((x) => x.id == id)[0];
   if (marker) {
     const latlng = marker.getLatLng();
-    map.flyTo(latlng);
+    map.setView(latlng);
   }
 }
 function onLatLngEdited(input) {
@@ -452,4 +467,11 @@ function showGraph(onMouseOver, onMouseOut) {
       },
     },
   });
+}
+
+function lockWindow() {
+  document.querySelector('#lock-window').style.display = 'flex';
+}
+function unlockWindow() {
+  document.querySelector('#lock-window').style.display = 'none';
 }

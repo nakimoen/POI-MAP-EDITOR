@@ -23,6 +23,8 @@ window.ELEVATION_MAX = 0;
 window.GPX_LOADED = false;
 // gpx ファイル読み込み
 function loadGPX(map, onloaded) {
+  lockWindow();
+
   const file = document.getElementById('gpx-file').files[0];
   const reader = new FileReader();
   reader.onload = () => {
@@ -57,6 +59,8 @@ function loadGPX(map, onloaded) {
 
         window.GPX_LOADED = true;
         if (onloaded) onloaded(target);
+
+        unlockWindow();
       })
       .on('addpoint', function (e) {
         if (e.point_type == 'waypoint') {

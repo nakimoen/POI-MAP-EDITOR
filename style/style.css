@@ -5,7 +5,22 @@ body {
   background-color: snow;
   padding-bottom: 2rem;
 }
-
+#lock-window {
+  display: none;
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(255, 250, 250, 0.5);
+  z-index: 9999999;
+  left: 0;
+  top: 0;
+  justify-content: center;
+}
+#lock-window > p {
+  font-size: 3rem;
+  margin: auto;
+  background-color: rgb(242, 220, 242);
+}
 #howtouse dt::before {
   content: '⭐';
 }
@@ -148,4 +163,37 @@ span.move-down {
   height: 20vh;
   width: 100%;
   border: dotted black 1px;
+}
+
+#wrapper-koma > article {
+  counter-reset: marker-number 0;
+}
+
+#wrapper-koma > article > section.a4 {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+section.a4 {
+  width: 210mm;
+  height: 297mm;
+}
+section.a4 > .koma {
+  width: 20%;
+  counter-increment: marker-number 1;
+}
+.koma::before {
+  position: absolute;
+  content: '【' counter(marker-number) '】';
+  background-color: white;
+}
+.koma > canvas {
+  width: 40mm !important;
+  height: 40mm !important;
+}
+.koma > textarea {
+  width: -webkit-fill-available;
+  height: 25mm;
+  border: none;
 }
