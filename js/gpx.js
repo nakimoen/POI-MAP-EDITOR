@@ -26,7 +26,6 @@ function loadGPX(map, file, onloaded, onaddpoint) {
   const reader = new FileReader();
   reader.onload = () => {
     const gpxText = reader.result;
-    window.GPX_TEXT = gpxText;
     loadGPXText(map, gpxText, onloaded, onaddpoint);
   };
   reader.readAsText(file);
@@ -34,6 +33,8 @@ function loadGPX(map, file, onloaded, onaddpoint) {
 function loadGPXText(map, text, onloaded, onaddpoint) {
   // const pre = document.getElementById('pre1');
   // pre.innerHTML = reader.result;
+  window.GPX_TEXT = text;
+
   const points = [];
   new L.GPX(text, {
     async: true,
