@@ -1,4 +1,4 @@
-class TCX_KOMAZU {
+class KomazuGenerator {
   #koma_points = [];
 
   /**
@@ -15,17 +15,19 @@ class TCX_KOMAZU {
    * @param {Document} targetDocument
    */
   constructor(targetDocument) {
-    this.#_document = targetDocument;
     this.#generateFlag = true;
     // no print elements
-    this.#_document
-      .querySelectorAll(
-        // '.leaflet-pane.leaflet-overlay-pane, .leaflet-marker-icon.cross'
-        '.leaflet-marker-icon.cross'
-      )
-      .forEach((elem) => {
-        elem.setAttribute('data-html2canvas-ignore', 'true');
-      });
+    if (targetDocument) {
+      this.#_document = targetDocument;
+      this.#_document
+        .querySelectorAll(
+          // '.leaflet-pane.leaflet-overlay-pane, .leaflet-marker-icon.cross'
+          '.leaflet-marker-icon.cross'
+        )
+        .forEach((elem) => {
+          elem.setAttribute('data-html2canvas-ignore', 'true');
+        });
+    }
   }
 
   /**
@@ -33,6 +35,7 @@ class TCX_KOMAZU {
    * @param {string} tcxtext tcxファイルのテキスト
    */
   loadtcx(tcxtext, onfoundpoint) {
+    this.#koma_points.splice(0);
     const doc = new DOMParser().parseFromString(tcxtext, 'text/xml');
     const points = doc.querySelectorAll('CoursePoint');
     points.forEach((point) => {
@@ -53,13 +56,13 @@ class TCX_KOMAZU {
       const text = point.querySelector('Notes').textContent;
       const type = point.querySelector('PointType').textContent;
 
-      const point = {
+      const pointitem = {
         type,
         text,
         latlng: { lat, lng },
       };
-      this.#koma_points.push(point);
-      if (onfoundpoint) onfoundpoint(point);
+      this.#koma_points.push(pointitem);
+      if (onfoundpoint) onfoundpoint(pointitem);
     });
   }
 
@@ -96,11 +99,13 @@ class TCX_KOMAZU {
     const linesY = parseFloat(linesTransform[1].replace('px', ''));
 
     const koma_dom_arr = new Array();
+
     for await (const point of this.#koma_points) {
       if (!this.#generateFlag) break;
 
       // マップ位置移動
-      map.setView(point.latlng, 19);
+      const latlng = point.latlng || point.latlon;
+      map.setView({ lat: point.lat, lng: point.lng }, 19);
 
       // TODO: できたらタイル読み込み完了イベントとりたい
       await sleep(interval);
@@ -158,5 +163,11 @@ class TCX_KOMAZU {
     });
 
     return;
+  }
+
+  async makeKomaArticleByPoints(map, interval, points) {
+    this.#koma_points.splice(0);
+    this.#koma_points = new Array(...points);
+    return this.makeKomaArticle(map, interval);
   }
 }

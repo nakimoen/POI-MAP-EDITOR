@@ -1,6 +1,6 @@
 'use strict';
 
-class CNX {
+class CnxGenerator {
   #gpxtext;
   /**
    *
@@ -14,7 +14,7 @@ class CNX {
    * @typedef {Object} point
    * @prop {string} lat latitude
    * @prop {string} lng longitude
-   * @prop {string} title title
+   * @prop {string} text text
    */
   /**
    * @typedef {Object} gpxInfo
@@ -80,7 +80,7 @@ class CNX {
       const typedom = cnx.createElement('Type');
       typedom.textContent = 0;
       const descdom = cnx.createElement('Descr');
-      descdom.textContent = point.title;
+      descdom.textContent = point.text;
 
       pointdom.appendChild(latdom);
       pointdom.appendChild(lngdom);

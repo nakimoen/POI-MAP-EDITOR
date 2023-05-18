@@ -1,0 +1,53 @@
+@media print {
+  main > :not(#wrapper-koma) {
+    display: none;
+  }
+  section.a4 {
+    border: none;
+  }
+}
+
+article#komazu-article > section.a4 {
+  border-radius: 0;
+}
+article#komazu-article {
+  counter-reset: marker-number 0;
+}
+
+article#komazu-article > section.a4 {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  place-content: start;
+}
+
+section.a4 {
+  width: 210mm;
+  height: 297mm;
+}
+section.a4 > .koma {
+  width: 20%;
+  counter-increment: marker-number 1;
+}
+
+.koma {
+  box-sizing: border-box;
+  border: 1px solid black;
+  height: 69mm;
+}
+
+.koma::before {
+  position: absolute;
+  content: '【' counter(marker-number) '】';
+  background-color: white;
+}
+.koma > canvas {
+  width: 40mm !important;
+  height: 40mm !important;
+}
+.koma > textarea {
+  width: -webkit-fill-available;
+  height: 25mm;
+  border: none;
+  resize: none;
+}

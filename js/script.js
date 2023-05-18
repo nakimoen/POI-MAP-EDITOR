@@ -1,6 +1,8 @@
 'use strict';
 //TODO: 構造整理
 
+const KOMAZU = new KomazuGenerator(document);
+
 document.getElementById('gpx-file').addEventListener('click', function () {
   if (window.GPX_LOADED) {
     if (confirm('新たにGPXファイルを読み込むと、現在の状態が全て消えます。')) {
@@ -10,59 +12,92 @@ document.getElementById('gpx-file').addEventListener('click', function () {
     }
   }
 });
-document.getElementById('gpx-file').addEventListener(
-  'change',
-  function () {
+document
+  .getElementById('gpx-file')
+  .addEventListener('change', async function () {
+    const pointsForTcx = [];
+
     const file = this.files[0];
+    const exts = file.name.split('.');
+    const filetype = exts[exts.length - 1].toLowerCase();
+    if (!['gpx', 'tcx'].includes(filetype)) {
+      return alert('ファイルタイプが確認できませんでした');
+    }
+    const isTcx = filetype == 'tcx';
+
+    const filetext = await (async () => {
+      const text = await new FileReaderEx().readAsText(file);
+      if (isTcx) {
+        const { points, gpxtext } = new TcxController(text).toGpx();
+        pointsForTcx.push(...points);
+        return gpxtext;
+      }
+      return text;
+    })();
+
     document.getElementById('gpx-file-message').textContent = file
       ? `${file.name}(${file.size / 1000}KB)`
       : 'ファイルが選択されていません';
     if (file) {
       lockWindow();
-      loadGPX(map, file, function (e) {
-        // document.querySelector(
-        //   '#wrapper-graph table tr:nth-child(1) td'
-        // ).textContent = window.GPX_INFO.distance;
-        // document.querySelector(
-        //   '#wrapper-graph table tr:nth-child(2) td'
-        // ).textContent = window.GPX_INFO.ascent;
-        // document.querySelector(
-        //   '#wrapper-graph table tr:nth-child(3) td'
-        // ).textContent = window.GPX_INFO.descent;
+      loadGPXText(
+        map,
+        filetext,
+        function (e) {
+          showGraph(graphMouseOver, graphMouseOut);
+          if (isTcx) {
+            pointsForTcx.forEach((point) => {
+              //TODO: DIVマーカーにする
+              addMarker(point.latlon, point.text);
+            });
+          }
+          unlockWindow();
+        },
+        function (e) {
+          // onaddpoint
+          if (!isTcx) {
+            const pointtype = e.point_type;
+            if (pointtype == 'waypoint') {
+              // marker object
+              const marker = e.point;
+              // ドラッグの有効化
+              marker.options.draggable = true;
 
-        showGraph(graphMouseOver, graphMouseOut);
-        document.querySelector('#cue-file').removeAttribute('disabled');
-        unlockWindow();
-      });
+              // マーカーのサイズ
+              marker.options.icon.options.iconSize = [25, 41];
+              // マーカー管理用IDの設定
+              const id = NEXT_MARKER_ID++;
+              marker.id = id;
+
+              //マーカー配列に追加
+              MARKER_LIST.push(marker);
+              // マーカー一覧テーブルに表示
+              MarkerTable.addRow(id, marker.getLatLng(), marker.options.title);
+
+              const text = marker.options.title;
+              const latlng = marker._latlng;
+              pointsForTcx.push({ latlng, text, pointtype });
+            }
+          }
+        }
+      );
     }
-  },
-  function () {
-    //マーカー配列に追加
-    MARKER_LIST.push(marker);
-    // マーカー一覧テーブルに表示
-    MarkerTable.addRow(id, marker.getLatLng(), marker.options.title);
-  }
-);
+  });
 
-document.getElementById('cue-file').addEventListener('change', function () {
-  const file = this.files[0];
-  const reader = new FileReader();
-  reader.onload = async () => {
-    const text = reader.result;
-    const komazu = new TCX_KOMAZU(document);
-    komazu.loadtcx(text, function (point) {
-      //TODO: DIVマーカーにする
-      addMarker(point.latlng, point.text);
-    });
-    const inteval = document.querySelector('#koma-load-interval').value * 1000;
-
+document
+  .querySelector('#generate-komazu-button')
+  .addEventListener('click', async function () {
+    const points = getPoints();
+    if (points.length === 0) {
+      return alert('POIが取得できませんでした');
+    }
     lockWindow();
-    await komazu.makeKomaArticle(map, inteval);
+    const inteval = document.querySelector('#koma-load-interval').value * 1000;
+    await KOMAZU.makeKomaArticleByPoints(map, inteval, points).catch((e) => {
+      unlockWindow();
+    });
     unlockWindow();
-  };
-  reader.readAsText(file);
-});
-
+  });
 /**
  * @typedef {Object} LatLng
  * @prop {string|number} lat 緯度
@@ -349,7 +384,19 @@ document.querySelector('#csv-insert-button').addEventListener('click', loadCSV);
 //
 // 出力
 //
-
+function getPoints() {
+  return Array.from(MarkerTable.getTable().querySelectorAll('tbody tr')).reduce(
+    (acc, tr) => {
+      acc.push({
+        lat: tr.querySelector('.lat').value,
+        lng: tr.querySelector('.lng').value,
+        text: tr.querySelector('.title').value,
+      });
+      return acc;
+    },
+    []
+  );
+}
 function download(str, filename) {
   // ダウンロード
   const blob = new Blob([str], { type: 'text/xml' });
@@ -382,17 +429,8 @@ function onExport() {
 }
 
 function exportCNX() {
-  const points = Array.from(
-    MarkerTable.getTable().querySelectorAll('tbody tr')
-  ).reduce((acc, tr) => {
-    acc.push({
-      lat: tr.querySelector('.lat').value,
-      lng: tr.querySelector('.lng').value,
-      title: tr.querySelector('.title').value,
-    });
-    return acc;
-  }, []);
-  const cnxstr = new CNX(window.GPX_TEXT).gpx2cnx({
+  const points = getPoints();
+  const cnxstr = new CnxGenerator(window.GPX_TEXT).gpx2cnx({
     ascent: window.GPX_INFO.ascent,
     descent: window.GPX_INFO.descent,
     distance: window.GPX_INFO.distance,

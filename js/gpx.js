@@ -25,58 +25,49 @@ window.GPX_LOADED = false;
 function loadGPX(map, file, onloaded, onaddpoint) {
   const reader = new FileReader();
   reader.onload = () => {
-    // const pre = document.getElementById('pre1');
-    // pre.innerHTML = reader.result;
     const gpxText = reader.result;
     window.GPX_TEXT = gpxText;
-    new L.GPX(reader.result, {
-      async: true,
-      marker_options: {
-        wptIconUrls: {
-          '': 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-        },
-        shadowUrl:
-          'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-        startIconUrl: '/pin-icon-start.png',
-        endIconUrl: '/pin-icon-end.png',
-        // shadowUrl: 'pin-shadow.png',
-      },
-    })
-      .on('loaded', function (e) {
-        const target = e.target;
-        map.fitBounds(target.getBounds());
-        window.GPX_INFO = {
-          distance: target.get_distance(),
-          ascent: target.get_elevation_gain(),
-          descent: target.get_elevation_loss(),
-        };
-
-        window.ELEVATION_DATA = target.get_elevation_data();
-        window.ELEVATION_MAX = target.get_elevation_max();
-
-        window.GPX_LOADED = true;
-        if (onloaded) onloaded(target);
-      })
-      .on('addpoint', function (e) {
-        if (e.point_type == 'waypoint') {
-          // marker object
-          const marker = e.point;
-          // ドラッグの有効化
-          marker.options.draggable = true;
-
-          // マーカーのサイズ
-          marker.options.icon.options.iconSize = [25, 41];
-          // マーカー管理用IDの設定
-          const id = NEXT_MARKER_ID++;
-          marker.id = id;
-
-          if (onaddpoint) onaddpoint(marker);
-        }
-      })
-      .addTo(map);
+    loadGPXText(map, gpxText, onloaded, onaddpoint);
   };
-
   reader.readAsText(file);
+}
+function loadGPXText(map, text, onloaded, onaddpoint) {
+  // const pre = document.getElementById('pre1');
+  // pre.innerHTML = reader.result;
+  const points = [];
+  new L.GPX(text, {
+    async: true,
+    marker_options: {
+      wptIconUrls: {
+        '': 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+      },
+      shadowUrl:
+        'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+      startIconUrl: '/pin-icon-start.png',
+      endIconUrl: '/pin-icon-end.png',
+      // shadowUrl: 'pin-shadow.png',
+    },
+  })
+    .on('loaded', function (e) {
+      const target = e.target;
+      map.fitBounds(target.getBounds());
+      window.GPX_INFO = {
+        distance: target.get_distance(),
+        ascent: target.get_elevation_gain(),
+        descent: target.get_elevation_loss(),
+      };
+
+      window.ELEVATION_DATA = target.get_elevation_data();
+      window.ELEVATION_MAX = target.get_elevation_max();
+
+      window.GPX_LOADED = true;
+      if (onloaded) onloaded(target);
+    })
+    .on('addpoint', function (e) {
+      points.push(e);
+      if (onaddpoint) onaddpoint(e);
+    })
+    .addTo(map);
 }
 
 class GpxEditor {

@@ -5,10 +5,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>POI MAP EDITOR</title>
-    <link rel="stylesheet" href="/lib/leaflet/leaflet.css" />
-    <link rel="stylesheet" href="/style/button.css" />
-    <link rel="stylesheet" href="/style/mark.css" />
-    <link rel="stylesheet" href="/style/style.css" />
+    <link rel="stylesheet" href="./lib/leaflet/leaflet.css" />
+    <link rel="stylesheet" href="./style/button.css" />
+    <link rel="stylesheet" href="./style/mark.css" />
+    <link rel="stylesheet" href="./style/style.css" />
+    <link rel="stylesheet" href="./style/komazu.css" />
   </head>
   <body>
     <main>
@@ -16,35 +17,20 @@
       <span style="color: red"
         >現在試験的運用中のため検証が不十分な状態です。何卒ご理解ください。</span
       >
+
       <div>
         <div id="wrapper-head">
           <div id="wrapper-file">
             <label id="gpx-file-label" for="gpx-file" class="button-excute">
-              GPXファイルの読み込み
-              <input type="file" name="gpx-file" id="gpx-file" accept=".gpx" />
+              GPX,TCXファイルの読み込み
+              <input
+                type="file"
+                name="gpx-file"
+                id="gpx-file"
+                accept=".gpx, .tcx"
+              />
             </label>
             <p id="gpx-file-message">ファイルが選択されていません</p>
-          </div>
-          <div id="wrapper-load-cue">
-            <label for="cue-file">キューシート読み込み(TCXファイル)</label>
-            <label for="koma-load-interval">コマ図生成間隔(秒)</label>
-            <input
-              type="number"
-              id="koma-load-interval"
-              min="0"
-              step="1"
-              value="2"
-            />
-            <br />
-            <input
-              type="file"
-              name="cue-file"
-              id="cue-file"
-              accept=".tcx"
-              disabled
-            />
-            <br />
-            <small>（※gpxファイルを先に読み込んでください）</small>
           </div>
           <div id="wrapper-csv-read">
             <details>
@@ -217,20 +203,33 @@
         </div> -->
       </div>
       <hr />
+      <p>POI情報を元に簡易コマ図を生成</p>
+      <small>それっぽいものなだけで、出力物が利用できるレベルではありません</small>
+      <p>
+        <h3>注意</h3>
+        ※ルートのラインがずれていたり、画像がうまくとれなかったりします。<br>
+        ※コマ図の向きが北が上固定状態で、進行方向に則していません。
+      </p>
+
+      <label for="koma-load-interval">コマ図生成間隔(秒)</label>
+      <input type="number" id="koma-load-interval" min="0" step="1" value="2" />
+      <br />
+      <button id="generate-komazu-button">コマ図生成</button>
+      <br />
+      <button onclick="window.print()">印刷・PDF保存</button>
+      <div id="komazu-progress"></div>
       <div id="wrapper-koma">
-        <article></article>
+        <article id="komazu-article"></article>
       </div>
       <article>
         <section>
           <h2>WHAT IS THIS</h2>
           <p>
-            <strong>
-              Ride With GPS
-            </strong>
+            <strong> Ride With GPS </strong>
             等のルートファイルを元に使用することを想定しています。
-            <br>
-            <br>
-            <strong>GPX ファイル</strong>
+            <br />
+            <br />
+            <strong>GPX, TCX ファイル</strong>
             （ルート・トラックファイル）を読み込み、<strong
               >Open Street Map</strong
             >上で、<strong>ウェイポイント</strong>(POI)を設定するWEBアプリです。<br />
@@ -243,10 +242,11 @@
           </p>
           <b>WHY MAKE THIS</b>
           <br />
-          Ride With GPSの標高補正機能を活かしたままで、課金せずにPOIのあるルートファイルを用意したかったんや……
-          <br>
+          Ride With
+          GPSの標高補正機能を活かしたままで、課金せずにPOIのあるルートファイルを用意したかったんや……
+          <br />
           <small>
-            あと、igs用CNXファイルをPCで用意したかった。<br>
+            あと、igs用CNXファイルをPCで用意したかった。<br />
             POI設定がスマホ公式アプリ経由でしかできない＆それが使いにくい（スマホあんまり使わないこともあいまって、表示領域のデザインがクソで無理すぎる）
           </small>
         </section>
@@ -288,16 +288,13 @@
             </dd>
           </dl>
           <hr />
-          <h5>コマ図生成機能（α以前状態）</h5>
+          <h5>コマ図生成機能α</h5>
           <p>まだまだ整備したりない機能です</p>
           <p>使い方：ただのメモ状態</p>
           <p>
             Ride With GPSのファイルを扱うことが前提<br />
-            gpx読み込み->tcx読み込み<br />
+            gpx,tcx読み込み<br />
             簡易コマ図を表示<br />
-            <b>gpxとtcxが同じルートであることを要確認</b><br />
-            <h6>展望</h6>
-            TCXファイルのみの読み込みにする
           </p>
         </section>
 
@@ -378,10 +375,10 @@
         <section>
           <h5>更新履歴</h5>
           <dl>
+            <dt>2023/05/19</dt>
+            <dd>コマ図生成機能α整備</dd>
             <dt>2023/05/18</dt>
-            <dd>
-              コマ図生成機能（α以前状態）
-            </dd>
+            <dd>コマ図生成機能（α以前状態）</dd>
             <dt>2023/05/04</dt>
             <dd>
               <ul>
@@ -412,21 +409,20 @@
     </main>
 
     <div id="lock-window">
-      <p>
-        please wait......
-      </p>
+      <p>please wait......</p>
     </div>
 
-    <script src="/lib/leaflet/leaflet.js"></script>
-    <script src="/lib/leaflet-gpx-modified-by-nakimoen.@1.7.0.js"></script>
-    <script src="/lib/html2canvas.min.js"></script>
+    <script src="./lib/leaflet/leaflet.js"></script>
+    <script src="./lib/leaflet-gpx-modified-by-nakimoen.@1.7.0.js"></script>
+    <script src="./lib/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xml-beautify@1.2.3/dist/XmlBeautify.js"></script>
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/modules/accessibility.js"></script>
-    <script src="/js/utils.js"></script>
-    <script src="/js/gpx.js"></script>
-    <script src="/js/cnx.js"></script>
-    <script src="/js/koma.js"></script>
-    <script src="/js/script.js"></script>
+    <script src="./js/utils.js"></script>
+    <script src="./js/gpx.js"></script>
+    <script src="./js/cnx.js"></script>
+    <script src="./js/tcx.js"></script>
+    <script src="./js/koma.js"></script>
+    <script src="./js/script.js"></script>
   </body>
 </html>

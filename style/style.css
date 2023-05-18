@@ -164,36 +164,3 @@ span.move-down {
   width: 100%;
   border: dotted black 1px;
 }
-
-#wrapper-koma > article {
-  counter-reset: marker-number 0;
-}
-
-#wrapper-koma > article > section.a4 {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-}
-
-section.a4 {
-  width: 210mm;
-  height: 297mm;
-}
-section.a4 > .koma {
-  width: 20%;
-  counter-increment: marker-number 1;
-}
-.koma::before {
-  position: absolute;
-  content: '【' counter(marker-number) '】';
-  background-color: white;
-}
-.koma > canvas {
-  width: 40mm !important;
-  height: 40mm !important;
-}
-.koma > textarea {
-  width: -webkit-fill-available;
-  height: 25mm;
-  border: none;
-}
