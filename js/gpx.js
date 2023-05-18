@@ -35,7 +35,6 @@ function loadGPXText(map, text, onloaded, onaddpoint) {
   // pre.innerHTML = reader.result;
   window.GPX_TEXT = text;
 
-  const points = [];
   new L.GPX(text, {
     async: true,
     marker_options: {
@@ -65,7 +64,6 @@ function loadGPXText(map, text, onloaded, onaddpoint) {
       if (onloaded) onloaded(target);
     })
     .on('addpoint', function (e) {
-      points.push(e);
       if (onaddpoint) onaddpoint(e);
     })
     .addTo(map);
@@ -137,7 +135,7 @@ class GpxEditor {
         `<wpt lat="${marker.lat}" lon="${marker.lng}">
         <ele>0</ele>
         <name>${marker.title}</name>
-        <type>CHECKPOINT</type>
+        <type>GENERIC</type>
         </wpt>
         `,
         'text/xml'

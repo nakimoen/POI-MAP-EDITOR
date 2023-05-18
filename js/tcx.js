@@ -66,13 +66,8 @@ class TcxController {
   }
 
   /**
-   * @typedef {Object} parsedGpxData
-   * @prop {Array<TcxCoursePoint>} points
-   * @prop {string} gpxtext
-   */
-  /**
    *
-   * @returns {parsedGpxData}
+   * @returns {string} gpx text
    */
   toGpx() {
     const gpxdoc = new DOMParser().parseFromString(
@@ -103,11 +98,6 @@ class TcxController {
       });
 
     // CoursePoint
-    /**
-     * @type {Array<TcxCoursePoint>} points
-     */
-    //TODO: set waypoint
-    const points = [];
     tcxdoc
       .querySelectorAll('Courses > Course > CoursePoint')
       .forEach((point) => {
@@ -121,9 +111,21 @@ class TcxController {
         const text = point.querySelector('Notes').textContent;
 
         const latlon = { lat, lon };
-        points.push({ latlon, type, text });
+
+        const wptdoc = new DOMParser().parseFromString(
+          `<wpt lat="${lat}" lon="${lon}">
+          <ele>0</ele>
+          <name>${text}</name>
+          <type>GENERIC</type>
+          </wpt>
+          `,
+          'application/xml'
+        );
+        const wpt = wptdoc.querySelector('wpt');
+
+        gpxdoc.querySelector('trk').insertAdjacentElement('beforebegin', wpt);
       });
 
-    return { points, gpxtext: new XMLSerializer().serializeToString(gpxdoc) };
+    return new XMLSerializer().serializeToString(gpxdoc);
   }
 }

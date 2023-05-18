@@ -15,8 +15,6 @@ document.getElementById('gpx-file').addEventListener('click', function () {
 document
   .getElementById('gpx-file')
   .addEventListener('change', async function () {
-    const pointsForTcx = [];
-
     const file = this.files[0];
     const exts = file.name.split('.');
     const filetype = exts[exts.length - 1].toLowerCase();
@@ -28,8 +26,7 @@ document
     const filetext = await (async () => {
       const text = await new FileReaderEx().readAsText(file);
       if (isTcx) {
-        const { points, gpxtext } = new TcxController(text).toGpx();
-        pointsForTcx.push(...points);
+        const gpxtext = new TcxController(text).toGpx();
         return gpxtext;
       }
       return text;
@@ -45,39 +42,30 @@ document
         filetext,
         function (e) {
           showGraph(graphMouseOver, graphMouseOut);
-          if (isTcx) {
-            pointsForTcx.forEach((point) => {
-              //TODO: DIVマーカーにする
-              addMarker(point.latlon, point.text);
-            });
-          }
           unlockWindow();
         },
         function (e) {
           // onaddpoint
-          if (!isTcx) {
-            const pointtype = e.point_type;
-            if (pointtype == 'waypoint') {
-              // marker object
-              const marker = e.point;
-              // ドラッグの有効化
-              marker.options.draggable = true;
+          const pointtype = e.point_type;
+          if (pointtype == 'waypoint') {
+            // marker object
+            const marker = e.point;
+            // ドラッグの有効化
+            marker.options.draggable = true;
 
-              // マーカーのサイズ
-              marker.options.icon.options.iconSize = [25, 41];
-              // マーカー管理用IDの設定
-              const id = NEXT_MARKER_ID++;
-              marker.id = id;
+            // マーカーのサイズ
+            marker.options.icon.options.iconSize = [25, 41];
+            // マーカー管理用IDの設定
+            const id = NEXT_MARKER_ID++;
+            marker.id = id;
 
-              //マーカー配列に追加
-              MARKER_LIST.push(marker);
-              // マーカー一覧テーブルに表示
-              MarkerTable.addRow(id, marker.getLatLng(), marker.options.title);
+            //マーカー配列に追加
+            MARKER_LIST.push(marker);
+            // マーカー一覧テーブルに表示
+            MarkerTable.addRow(id, marker.getLatLng(), marker.options.title);
 
-              const text = marker.options.title;
-              const latlng = marker._latlng;
-              pointsForTcx.push({ latlng, text, pointtype });
-            }
+            const text = marker.options.title;
+            const latlng = marker._latlng;
           }
         }
       );
