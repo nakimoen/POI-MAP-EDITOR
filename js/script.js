@@ -10,38 +10,55 @@ document.getElementById('gpx-file').addEventListener('click', function () {
     }
   }
 });
-document.getElementById('gpx-file').addEventListener('change', function () {
-  const file = this.files[0];
-  document.getElementById('gpx-file-message').textContent = file
-    ? `${file.name}(${file.size / 1000}KB)`
-    : 'ファイルが選択されていません';
-  if (file) {
-    loadGPX(map, function (e) {
-      // document.querySelector(
-      //   '#wrapper-graph table tr:nth-child(1) td'
-      // ).textContent = window.GPX_INFO.distance;
-      // document.querySelector(
-      //   '#wrapper-graph table tr:nth-child(2) td'
-      // ).textContent = window.GPX_INFO.ascent;
-      // document.querySelector(
-      //   '#wrapper-graph table tr:nth-child(3) td'
-      // ).textContent = window.GPX_INFO.descent;
+document.getElementById('gpx-file').addEventListener(
+  'change',
+  function () {
+    const file = this.files[0];
+    document.getElementById('gpx-file-message').textContent = file
+      ? `${file.name}(${file.size / 1000}KB)`
+      : 'ファイルが選択されていません';
+    if (file) {
+      lockWindow();
+      loadGPX(map, file, function (e) {
+        // document.querySelector(
+        //   '#wrapper-graph table tr:nth-child(1) td'
+        // ).textContent = window.GPX_INFO.distance;
+        // document.querySelector(
+        //   '#wrapper-graph table tr:nth-child(2) td'
+        // ).textContent = window.GPX_INFO.ascent;
+        // document.querySelector(
+        //   '#wrapper-graph table tr:nth-child(3) td'
+        // ).textContent = window.GPX_INFO.descent;
 
-      showGraph(graphMouseOver, graphMouseOut);
-      document.querySelector('#cue-file').removeAttribute('disabled');
-    });
+        showGraph(graphMouseOver, graphMouseOut);
+        document.querySelector('#cue-file').removeAttribute('disabled');
+        unlockWindow();
+      });
+    }
+  },
+  function () {
+    //マーカー配列に追加
+    MARKER_LIST.push(marker);
+    // マーカー一覧テーブルに表示
+    MarkerTable.addRow(id, marker.getLatLng(), marker.options.title);
   }
-});
+);
 
 document.getElementById('cue-file').addEventListener('change', function () {
   const file = this.files[0];
   const reader = new FileReader();
-  reader.onload = () => {
+  reader.onload = async () => {
     const text = reader.result;
-    const komazu = new TCX_KOMAZU();
-    komazu.loadtcx(text);
+    const komazu = new TCX_KOMAZU(document);
+    komazu.loadtcx(text, function (point) {
+      //TODO: DIVマーカーにする
+      addMarker(point.latlng, point.text);
+    });
     const inteval = document.querySelector('#koma-load-interval').value * 1000;
-    komazu.makeKomaArticle(map, inteval);
+
+    lockWindow();
+    await komazu.makeKomaArticle(map, inteval);
+    unlockWindow();
   };
   reader.readAsText(file);
 });
@@ -60,7 +77,7 @@ function isLatLngString(string) {
   return /^\d{1,3}\.\d{2,}$/.test(string);
 }
 
-const map = L.map('map').setView([35.68148019312498, 139.7671569845131], 8);
+const map = L.map('map').setView([35.6814, 139.7671], 8);
 let currentMarker;
 let MARKER_LIST = [];
 let NEXT_MARKER_ID = 0;
@@ -347,7 +364,10 @@ function onExport() {
   const type = document.querySelector(
     'input[name="download-type"]:checked'
   ).value;
-  const gpxeditor = new GpxEditor(window.GPX_TEXT);
+
+  const file = document.getElementById('gpx-file').files[0];
+
+  const gpxeditor = new GpxEditor(window.GPX_TEXT, file);
   if (!gpxeditor.getValid()) {
     alert('ファイルを読み込めませんでした。');
     return;

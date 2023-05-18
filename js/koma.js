@@ -1,9 +1,24 @@
 class TCX_KOMAZU {
   #koma_points = [];
 
-  constructor() {
+  /**
+   * @type {Document}
+   */ #_document;
+
+  /**
+   * @type {Boolean}
+   */
+  #generateFlag;
+
+  /**
+   *
+   * @param {Document} targetDocument
+   */
+  constructor(targetDocument) {
+    this.#_document = targetDocument;
+    this.#generateFlag = true;
     // no print elements
-    document
+    this.#_document
       .querySelectorAll(
         // '.leaflet-pane.leaflet-overlay-pane, .leaflet-marker-icon.cross'
         '.leaflet-marker-icon.cross'
@@ -17,9 +32,9 @@ class TCX_KOMAZU {
    *
    * @param {string} tcxtext tcxファイルのテキスト
    */
-  loadtcx(tcxtext) {
-    const document = new DOMParser().parseFromString(tcxtext, 'text/xml');
-    const points = document.querySelectorAll('CoursePoint');
+  loadtcx(tcxtext, onfoundpoint) {
+    const doc = new DOMParser().parseFromString(tcxtext, 'text/xml');
+    const points = doc.querySelectorAll('CoursePoint');
     points.forEach((point) => {
       /* MEMO: TCX一部メモ
       <CoursePoint>
@@ -37,13 +52,14 @@ class TCX_KOMAZU {
       const lat = point.querySelector('LatitudeDegrees').textContent;
       const text = point.querySelector('Notes').textContent;
       const type = point.querySelector('PointType').textContent;
-      this.#koma_points.push({
+
+      const point = {
         type,
         text,
         latlng: { lat, lng },
-      });
-      //TODO: DIVマーカーにする
-      addMarker({ lat, lng }, text);
+      };
+      this.#koma_points.push(point);
+      if (onfoundpoint) onfoundpoint(point);
     });
   }
 
@@ -53,12 +69,20 @@ class TCX_KOMAZU {
    * @param {string|number} interval コマ図対象地点の画像化のインターバル（mill seconds）
    */
   async makeKomaArticle(map, interval) {
-    lockWindow();
+    this.#_document
+      .querySelectorAll('#wrapper-koma > article > section')
+      .forEach((elem) => elem.remove());
 
-    const linesLayer = document.querySelector('svg.leaflet-zoom-animated');
-    const mapWidth = parseFloat(document.querySelector('#map').clientWidth);
-    const mapHeight = parseFloat(document.querySelector('#map').clientHeight);
-    const target = document.querySelector('#map');
+    const linesLayer = this.#_document.querySelector(
+      'svg.leaflet-zoom-animated'
+    );
+    const mapWidth = parseFloat(
+      this.#_document.querySelector('#map').clientWidth
+    );
+    const mapHeight = parseFloat(
+      this.#_document.querySelector('#map').clientHeight
+    );
+    const target = this.#_document.querySelector('#map');
 
     const oldLinesWidth = linesLayer.getAttribute('width');
     const oldLinesHeight = linesLayer.getAttribute('height');
@@ -73,9 +97,10 @@ class TCX_KOMAZU {
 
     const koma_dom_arr = new Array();
     for await (const point of this.#koma_points) {
+      if (!this.#generateFlag) break;
+
       // マップ位置移動
-      await map.setView(point.latlng, 19).then;
-      // スクショ
+      map.setView(point.latlng, 19);
 
       // TODO: できたらタイル読み込み完了イベントとりたい
       await sleep(interval);
@@ -103,7 +128,7 @@ class TCX_KOMAZU {
         scrollX: 0,
         scrollY: -window.scrollY,
       }).then((canvas) => {
-        const container = document.createElement('div');
+        const container = this.#_document.createElement('div');
         container.classList.add('koma');
         container.innerHTML = '<textarea>' + point.text + '</textarea>';
         container.prepend(canvas);
@@ -120,16 +145,18 @@ class TCX_KOMAZU {
     // コマ図用セクション（A4サイズフォーマット）生成
     const koma_chunk = koma_dom_arr.chunk(20);
     koma_chunk.forEach((koma_list) => {
-      const section = document.createElement('section');
+      const section = this.#_document.createElement('section');
       section.classList.add('a4');
 
       koma_list.forEach((koma) => {
         section.appendChild(koma);
       });
 
-      document.querySelector('#wrapper-koma > article').appendChild(section);
+      this.#_document
+        .querySelector('#wrapper-koma > article')
+        .appendChild(section);
     });
 
-    unlockWindow();
+    return;
   }
 }

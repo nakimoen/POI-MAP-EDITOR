@@ -22,10 +22,7 @@ window.ELEVATION_MAX = 0;
 
 window.GPX_LOADED = false;
 // gpx ファイル読み込み
-function loadGPX(map, onloaded) {
-  lockWindow();
-
-  const file = document.getElementById('gpx-file').files[0];
+function loadGPX(map, file, onloaded, onaddpoint) {
   const reader = new FileReader();
   reader.onload = () => {
     // const pre = document.getElementById('pre1');
@@ -59,8 +56,6 @@ function loadGPX(map, onloaded) {
 
         window.GPX_LOADED = true;
         if (onloaded) onloaded(target);
-
-        unlockWindow();
       })
       .on('addpoint', function (e) {
         if (e.point_type == 'waypoint') {
@@ -75,10 +70,7 @@ function loadGPX(map, onloaded) {
           const id = NEXT_MARKER_ID++;
           marker.id = id;
 
-          //マーカー配列に追加
-          MARKER_LIST.push(marker);
-          // マーカー一覧テーブルに表示
-          MarkerTable.addRow(id, marker.getLatLng(), marker.options.title);
+          if (onaddpoint) onaddpoint(marker);
         }
       })
       .addTo(map);
@@ -104,11 +96,11 @@ class GpxEditor {
   /**
    *
    * @param {string} gpx gpx text
+   * @param {File} file
    */
-  constructor(gpx) {
+  constructor(gpx, file) {
     // HACK: インスタンス生成失敗
     this.#gpx = gpx;
-    const file = document.getElementById('gpx-file').files[0];
     if (file) {
       this.#filename = file.name;
     }
@@ -118,6 +110,10 @@ class GpxEditor {
   getValid() {
     return this.#valid;
   }
+  /**
+   *
+   * @param {string} gpxText
+   */
   setGpx(gpxText) {
     this.#gpx = gpxText;
   }

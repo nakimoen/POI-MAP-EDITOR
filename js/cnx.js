@@ -29,8 +29,8 @@ class CNX {
    * @returns {string} cnx string
    */
   gpx2cnx(arg) {
-    const document = new DOMParser().parseFromString(this.#gpxtext, 'text/xml');
-    const trk = document.querySelector('trk');
+    const doc = new DOMParser().parseFromString(this.#gpxtext, 'text/xml');
+    const trk = doc.querySelector('trk');
 
     const cnx = new DOMParser().parseFromString('<Route></Route>', 'text/xml');
 
