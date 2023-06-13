@@ -110,15 +110,12 @@ class TcxController {
         const type = point.querySelector('PointType').textContent;
         const text = point.querySelector('Notes').textContent;
 
-        const latlon = { lat, lon };
-
         const wptdoc = new DOMParser().parseFromString(
           `<wpt lat="${lat}" lon="${lon}">
           <ele>0</ele>
           <name>${text}</name>
-          <type>GENERIC</type>
-          </wpt>
-          `,
+          <type>${type}</type>
+          </wpt>`,
           'application/xml'
         );
         const wpt = wptdoc.querySelector('wpt');

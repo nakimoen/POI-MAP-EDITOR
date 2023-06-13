@@ -3,11 +3,12 @@
 
 const KOMAZU = new KomazuGenerator(document);
 
-document.getElementById('gpx-file').addEventListener('click', function () {
+document.getElementById('gpx-file').addEventListener('click', function (e) {
   if (window.GPX_LOADED) {
     if (confirm('新たにGPXファイルを読み込むと、現在の状態が全て消えます。')) {
       location.reload();
     } else {
+      e.preventDefault();
       return;
     }
   }
@@ -106,7 +107,8 @@ let MARKER_LIST = [];
 let NEXT_MARKER_ID = 0;
 
 // マップのタイル設定
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+L.tileLayer('https://mt1.google.com/vt/lyrs=r&x={x}&y={y}&z={z}', {
+  // L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
   attribution:
     '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
@@ -358,7 +360,7 @@ function loadCSV() {
   // 各行処理
   csvText.split('\n').forEach((row) => {
     const [lat, lng, title] = row.split(',');
-    let flag = isLatLngString(lat) && isLatLngString(lng);
+    let flag = isLatLngString(lat.trim()) && isLatLngString(lng.trim());
     if (flag) {
       addMarker(
         { lat: lat.trim(), lng: lng.trim() },
@@ -424,7 +426,9 @@ function exportCNX() {
     distance: window.GPX_INFO.distance,
     points: points,
   });
-  return { xmlstring: cnxstr, filename: 'cnx_route.cnx' };
+  const file = document.getElementById('gpx-file').files[0];
+
+  return { xmlstring: cnxstr, filename: file.name + '_cnx.cnx' };
 }
 
 function graphMouseOver(e) {
